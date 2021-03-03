@@ -1,6 +1,6 @@
 import React, { Component } from "react";
 import PhonebookContact from "./Components/PhonebookContacts/phonebookContacts";
-import PhonebookFilter from "./Components/PhonebookFilter/phonebookFilter";
+// import PhonebookFilter from "./Components/PhonebookFilter/phonebookFilter";
 import PhonebookForm from "./Components/PhonebookForm/phonebookForm";
 import styles from "./App.module.css";
 
@@ -14,6 +14,19 @@ class App extends Component {
       { id: "id-5", name: "Roman Skliarenko", number: "247-56-71" },
     ],
   };
+  componentDidMount() {
+    const storage = localStorage.getItem("contacts");
+    const parsedStorage = JSON.parse(storage);
+    if (parsedStorage) {
+      this.setState({ contacts: parsedStorage });
+    }
+  }
+  componentDidUpdate(prevProps, prevState) {
+    if (this.state.contacts !== prevState.contacts) {
+      localStorage.setItem("contacts", JSON.stringify(this.state.contacts));
+    }
+  }
+
   deleteContact = (event) => {
     this.handleDeleteContact(event.currentTarget.name);
   };
@@ -58,7 +71,7 @@ class App extends Component {
         <h1 className={styles.title}>Phonebook</h1>
         <PhonebookForm updateContacts={this.updateContacts} />
         <PhonebookContact {...this.state} deleteContact={this.deleteContact} />
-        <PhonebookFilter {...this.state} />
+        {/* <PhonebookFilter {...this.state} /> */}
       </div>
     );
   }
