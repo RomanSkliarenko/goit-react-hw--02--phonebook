@@ -1,19 +1,15 @@
 import React, { Component } from "react";
-import PropTypes from "prop-types";
 import styles from "./phonebookContacts.module.css";
 import shortid from "shortid";
+import { connect } from "react-redux";
+import * as filterActions from "../../Redux/Filter/filter-actions";
+import * as contactsActions from "../../Redux/Contacts/contacts-actions";
 
-export default class PhonebookContact extends Component {
-  state = {
-    filter: "",
-  };
+class PhonebookContact extends Component {
   filterContacts = () => {
-    const filtred = this.props.contacts.filter((contact) => {
-      if (
-        contact.name
-          .toLowerCase()
-          .includes(this.state.filter.toLocaleLowerCase())
-      ) {
+    const { filter, contacts } = this.props;
+    const filtred = contacts.filter((contact) => {
+      if (contact.name.toLowerCase().includes(filter.toLocaleLowerCase())) {
         return contact;
       }
       return null;
@@ -21,10 +17,11 @@ export default class PhonebookContact extends Component {
     return filtred;
   };
   handleInputChange = (event) => {
-    this.setState({ [event.target.name]: event.target.value });
+    this.props.changeFilter(event.target.value);
     this.filterContacts();
   };
   render() {
+    const { filter, contacts } = this.props;
     return (
       <>
         <h2>Contacts</h2>
@@ -34,11 +31,12 @@ export default class PhonebookContact extends Component {
             className={styles.input}
             type="text"
             name="filter"
+            value={filter}
             onChange={this.handleInputChange}
           ></input>
         </label>
         <ul className={styles.list}>
-          {this.state.filter !== "" && this.filterContacts() ? (
+          {filter !== "" && this.filterContacts() ? (
             <>
               {this.filterContacts().map((query) => {
                 return (
@@ -49,7 +47,7 @@ export default class PhonebookContact extends Component {
                     <button
                       className={styles.button}
                       name={query.id}
-                      onClick={this.props.deleteContact}
+                      onClick={() => this.props.deleteContact(query.id)}
                     >
                       Delete
                     </button>
@@ -58,7 +56,7 @@ export default class PhonebookContact extends Component {
               })}
             </>
           ) : (
-            this.props.contacts.map((contact) => (
+            contacts.map((contact) => (
               <li key={contact.id} className={styles.item}>
                 <p>
                   {contact.name}: {contact.number}
@@ -66,7 +64,7 @@ export default class PhonebookContact extends Component {
                 <button
                   className={styles.button}
                   name={contact.id}
-                  onClick={this.props.deleteContact}
+                  onClick={() => this.props.deleteContact(contact.id)}
                 >
                   Delete
                 </button>
@@ -78,8 +76,16 @@ export default class PhonebookContact extends Component {
     );
   }
 }
+const mapStateToProps = (state) => ({
+  contacts: state.contacts.items,
+  filter: state.contacts.filter,
+});
 
-PhonebookContact.propTypes = {
-  contacts: PropTypes.array.isRequired,
-  deleteContact: PropTypes.func.isRequired,
+const mapDispatchToProps = (dispatch) => {
+  return {
+    deleteContact: (value) => dispatch(contactsActions.deleteContact(value)),
+    changeFilter: (value) => dispatch(filterActions.changeFilter(value)),
+  };
 };
+
+export default connect(mapStateToProps, mapDispatchToProps)(PhonebookContact);

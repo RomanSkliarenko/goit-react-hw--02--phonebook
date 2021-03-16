@@ -1,27 +1,48 @@
 import React, { Component } from "react";
 import shortid from "shortid";
-import PropTypes from "prop-types";
 import styles from "./phonebookForm.module.css";
+import { connect } from "react-redux";
+import * as contactsActions from "../../Redux/Contacts/contacts-actions";
 
-export default class PhonebookForm extends Component {
+class PhonebookForm extends Component {
   state = {
     name: "",
     number: "",
   };
-  static propTypes = {
-    updateContacts: PropTypes.func.isRequired,
-  };
+
   handleInputChange = (event) => {
     this.setState({ [event.target.name]: event.target.value });
   };
   formSubmit = (e) => {
     e.preventDefault();
-    this.props.updateContacts({
+    const user = {
       name: this.state.name,
       number: this.state.number,
       id: shortid.generate(),
+    };
+    const { name, number } = user;
+    const alredyInContacts = this.props.contacts.find((item) => {
+      return item.name === name || item.number === number;
     });
-    this.formReset();
+    if (alredyInContacts) {
+      alert("Такой контакт уже есть!");
+      this.formReset();
+      return;
+    } else if (name === "") {
+      alert("Введите имя для добавления!");
+      return;
+    } else if (number === "") {
+      alert("Введите номер для добавления!");
+      return;
+    } else if (name !== "" && number !== "") {
+      this.props.updateContacts(user);
+      this.formReset();
+      return;
+    } else {
+      alert("Что-то пошло не так :(");
+      this.formReset();
+      return;
+    }
   };
   formReset = () => {
     this.setState({ name: "", number: "" });
@@ -52,3 +73,13 @@ export default class PhonebookForm extends Component {
     );
   }
 }
+const mapStateToProps = (state) => ({
+  contacts: state.contacts.items,
+});
+
+const mapDispatchToProps = (dispatch) => {
+  return {
+    updateContacts: (value) => dispatch(contactsActions.addContact(value)),
+  };
+};
+export default connect(mapStateToProps, mapDispatchToProps)(PhonebookForm);
