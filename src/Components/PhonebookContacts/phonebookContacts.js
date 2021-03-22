@@ -3,9 +3,13 @@ import styles from "./phonebookContacts.module.css";
 import shortid from "shortid";
 import { connect } from "react-redux";
 import * as filterActions from "../../Redux/Filter/filter-actions";
-import * as contactsActions from "../../Redux/Contacts/contacts-actions";
+import { deleteContact, fetchContact } from "../../Operation/operation";
+import selectors from "../../Redux/selectors";
 
 class PhonebookContact extends Component {
+  componentDidMount() {
+    this.props.fetchContact();
+  }
   filterContacts = () => {
     const { filter, contacts } = this.props;
     const filtred = contacts.filter((contact) => {
@@ -77,13 +81,16 @@ class PhonebookContact extends Component {
   }
 }
 const mapStateToProps = (state) => ({
-  contacts: state.contacts.items,
-  filter: state.contacts.filter,
+  contacts: selectors.getContacts(state),
+  filter: selectors.getFilterValue(state),
+  // contacts: state.contacts.items,
+  // filter: state.contacts.filter,
 });
 
 const mapDispatchToProps = (dispatch) => {
   return {
-    deleteContact: (value) => dispatch(contactsActions.deleteContact(value)),
+    deleteContact: (value) => dispatch(deleteContact(value)),
+    fetchContact: () => dispatch(fetchContact()),
     changeFilter: (value) => dispatch(filterActions.changeFilter(value)),
   };
 };
